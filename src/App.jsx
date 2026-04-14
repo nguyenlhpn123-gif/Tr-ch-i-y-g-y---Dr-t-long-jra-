@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Play, RotateCcw, User, Users, Volume2, VolumeX, Settings, Plus, Trash2, Save, X } from 'lucide-react';
+import { Trophy, Play, RotateCcw, User, Users, Volume2, VolumeX, Settings, Plus, Trash2, Save, X, Info } from 'lucide-react';
 
 // --- DANH SÁCH CÂU HỎI (CÓ THỂ DỄ DÀNG CHỈNH SỬA) ---
 const QUESTIONS_LIST = [
@@ -46,6 +46,7 @@ export default function App() {
   const [gameState, setGameState] = useState('start');
   const [isAIMode, setIsAIMode] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [turn, setTurn] = useState('A');
   const [position, setPosition] = useState(0); // 0 là ở giữa, dương là Đội A thắng thế, âm là Đội B thắng thế
   const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
@@ -183,25 +184,36 @@ export default function App() {
       <audio ref={audioRef} src="/nhacchinh.mp3" loop />
       
       {/* Volume Control */}
-      <div className="absolute top-4 right-4 z-50 bg-white/80 backdrop-blur p-2 rounded-2xl shadow-lg border-2 border-amber-200 flex items-center gap-2">
-        <button 
-          onClick={() => setIsMuted(!isMuted)}
-          className="text-amber-600 hover:text-amber-700 transition-colors"
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+        {/* Nút Info (i) */}
+        <button
+          onClick={() => setShowInfo(true)}
+          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 flex items-center justify-center border-2 border-white"
+          title="Giới thiệu trò chơi"
         >
-          {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          <Info size={20} />
         </button>
-        <input 
-          type="range" 
-          min="0" 
-          max="1" 
-          step="0.01" 
-          value={volume} 
-          onChange={(e) => {
-            setVolume(parseFloat(e.target.value));
-            if (isMuted) setIsMuted(false);
-          }}
-          className="w-24 h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-        />
+
+        <div className="bg-white/80 backdrop-blur p-2 rounded-2xl shadow-lg border-2 border-amber-200 flex items-center gap-2">
+          <button 
+            onClick={() => setIsMuted(!isMuted)}
+            className="text-amber-600 hover:text-amber-700 transition-colors"
+          >
+            {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          </button>
+          <input 
+            type="range" 
+            min="0" 
+            max="1" 
+            step="0.01" 
+            value={volume} 
+            onChange={(e) => {
+              setVolume(parseFloat(e.target.value));
+              if (isMuted) setIsMuted(false);
+            }}
+            className="w-24 h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+          />
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -471,11 +483,14 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            onClick={() => setShowRules(false)}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border-4 border-blue-500 relative"
             >
               <button 
@@ -515,6 +530,63 @@ export default function App() {
               >
                 Đã hiểu!
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Info Modal (Giới thiệu trò chơi) */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowInfo(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 border-4 border-orange-500 relative max-h-[90vh] overflow-y-auto custom-scrollbar"
+            >
+              <button 
+                onClick={() => setShowInfo(false)}
+                className="absolute top-4 right-4 text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                <X size={28} />
+              </button>
+              
+              <h2 className="text-3xl font-bold text-orange-600 mb-6 text-center uppercase tracking-tight">
+                Giới thiệu trò chơi
+              </h2>
+              
+              <div className="space-y-4 text-stone-700 leading-relaxed text-justify">
+                <p>
+                  Trò chơi dân gian đẩy gậy (Drút ‘long ira) là một hoạt động thể thao truyền thống của người Bahnar, 
+                  được nhiều thanh thiếu niên và nhi đồng yêu thích. Trò chơi thường diễn ra trên sân nhà rông hoặc 
+                  bãi đất bằng phẳng, với mỗi lượt có hai người tham gia và sử dụng một cây gậy tre làm dụng cụ thi đấu.
+                </p>
+                <p>
+                  Hai người chơi đứng đối diện nhau qua một vạch ranh giới, mỗi người nắm một đầu gậy và dùng sức đẩy 
+                  đối phương ra khỏi vạch. Người thắng là người đẩy được đối thủ ra khỏi ranh giới. 
+                </p>
+                <p>
+                  Trò chơi không chỉ mang lại niềm vui mà còn giúp rèn luyện sức khỏe, sự khéo léo và tinh thần thi đấu, 
+                  đồng thời góp phần giữ gìn bản sắc văn hóa dân tộc.
+                </p>
+              </div>
+              
+              <div className="mt-8 flex justify-center">
+                <button
+                  onClick={() => setShowInfo(false)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-10 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95"
+                >
+                  Đóng
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
