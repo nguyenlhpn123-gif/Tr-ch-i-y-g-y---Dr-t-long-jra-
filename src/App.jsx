@@ -7,46 +7,86 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Play, RotateCcw, User, Users, Volume2, VolumeX, Settings, Plus, Trash2, Save, X, Info } from 'lucide-react';
 
-// --- DANH SÁCH CÂU HỎI (CÓ THỂ DỄ DÀNG CHỈNH SỬA) ---
-const QUESTIONS_LIST = [
-  { q: "5 + 7 = ?", a: 12 },
-  { q: "12 - 4 = ?", a: 8 },
-  { q: "3 x 4 = ?", a: 12 },
-  { q: "15 : 3 = ?", a: 5 },
-  { q: "20 + 15 = ?", a: 35 },
-  { q: "40 - 18 = ?", a: 22 },
-  { q: "6 x 7 = ?", a: 42 },
-  { q: "32 : 4 = ?", a: 8 },
-  { q: "9 + 14 = ?", a: 23 },
-  { q: "25 - 9 = ?", a: 16 },
-  { q: "8 x 3 = ?", a: 24 },
-  { q: "45 : 5 = ?", a: 9 },
-  { q: "13 + 27 = ?", a: 40 },
-  { q: "50 - 25 = ?", a: 25 },
-  { q: "7 x 4 = ?", a: 28 },
-  { q: "18 : 2 = ?", a: 9 },
-  { q: "11 + 19 = ?", a: 30 },
-  { q: "36 - 12 = ?", a: 24 },
-  { q: "5 x 9 = ?", a: 45 },
-  { q: "24 : 6 = ?", a: 4 },
-  { q: "17 + 8 = ?", a: 25 },
-  { q: "29 - 14 = ?", a: 15 },
-  { q: "10 x 2 = ?", a: 20 },
-  { q: "60 : 10 = ?", a: 6 },
-  { q: "22 + 33 = ?", a: 55 },
-  { q: "48 - 20 = ?", a: 28 },
-  { q: "4 x 8 = ?", a: 32 },
-  { q: "21 : 3 = ?", a: 7 },
-  { q: "14 + 16 = ?", a: 30 },
-  { q: "30 - 15 = ?", a: 15 }
-];
+// --- NGÂN HÀNG CÂU HỎI THEO KHỐI LỚP ---
+const QUESTION_BANK = {
+  grade1: [
+    { q: "7 + 2", a: "9" },
+    { q: "5 + 3", a: "8" },
+    { q: "9 - 4", a: "5" },
+    { q: "10 - 6", a: "4" },
+    { q: "23 + 15", a: "38" },
+    { q: "45 - 20", a: "25" },
+    { q: "34 + 12", a: "46" },
+    { q: "56 - 30", a: "26" },
+    { q: "12 + 7", a: "19" },
+    { q: "28 - 14", a: "14" }
+  ],
+  grade2: [
+    { q: "345 > 354 (đúng hay sai)", a: "sai" },
+    { q: "678 < 700 (đúng hay sai)", a: "đúng" },
+    { q: "245 + 123", a: "368" },
+    { q: "500 - 245", a: "255" },
+    { q: "346 + 122", a: "468" },
+    { q: "700 - 356", a: "344" },
+    { q: "2 x 5", a: "10" },
+    { q: "5 x 6", a: "30" },
+    { q: "10 : 2", a: "5" },
+    { q: "25 : 5", a: "5" }
+  ],
+  grade3: [
+    { q: "3456 > 3465 (đúng hay sai)", a: "sai" },
+    { q: "7890 < 8000 (đúng hay sai)", a: "đúng" },
+    { q: "4567 + 1234", a: "5801" },
+    { q: "7000 - 3567", a: "3433" },
+    { q: "2345 + 4321", a: "6666" },
+    { q: "8000 - 2456", a: "5544" },
+    { q: "123 x 3", a: "369" },
+    { q: "245 x 2", a: "490" },
+    { q: "864 : 4", a: "216" },
+    { q: "945 : 5", a: "189" }
+  ],
+  grade4: [
+    { q: "456789 > 456780 (đúng hay sai)", a: "đúng" },
+    { q: "123456 < 123450 (đúng hay sai)", a: "sai" },
+    { q: "Làm tròn 456789 đến hàng nghìn", a: "457000" },
+    { q: "Làm tròn 123456 đến hàng chục nghìn", a: "120000" },
+    { q: "34567 + 23456", a: "58023" },
+    { q: "80000 - 45678", a: "34322" },
+    { q: "123 x 45", a: "5535" },
+    { q: "246 x 12", a: "2952" },
+    { q: "1440 : 12", a: "120" },
+    { q: "Trung bình của 10, 20, 30", a: "20" }
+  ],
+  grade5: [
+    { q: "4.5 > 4.05 (đúng hay sai)", a: "đúng" },
+    { q: "3.25 < 3.3 (đúng hay sai)", a: "đúng" },
+    { q: "Làm tròn 12.345 đến hàng phần mười", a: "12.3" },
+    { q: "Làm tròn 45.678 đến hàng đơn vị", a: "46" },
+    { q: "12.5 + 3.75", a: "16.25" },
+    { q: "20.5 - 4.25", a: "16.25" },
+    { q: "12 x 2.5", a: "30" },
+    { q: "45 x 1.2", a: "54" },
+    { q: "36 : 1.5", a: "24" },
+    { q: "Trung bình của 2.5, 3.5, 4", a: "3.33" }
+  ]
+};
 
 export default function App() {
-  const [questions, setQuestions] = useState(QUESTIONS_LIST);
+  const [selectedGrade, setSelectedGrade] = useState(() => {
+    const saved = localStorage.getItem('tug-math-selected-grade');
+    return saved || 'grade1';
+  });
+  const [questions, setQuestions] = useState(QUESTION_BANK[selectedGrade]);
   const [gameState, setGameState] = useState('start');
   const [isAIMode, setIsAIMode] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [timeLimit, setTimeLimit] = useState(() => {
+    const saved = localStorage.getItem('tug-math-time-limit');
+    return saved ? parseInt(saved) : 10;
+  });
+  const [timeLeft, setTimeLeft] = useState(timeLimit);
   const [turn, setTurn] = useState('A');
   const [position, setPosition] = useState(0); // 0 là ở giữa, dương là Đội A thắng thế, âm là Đội B thắng thế
   const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
@@ -73,6 +113,7 @@ export default function App() {
     setCurrentQuestion(questions[randomIndex]);
     setUserAnswer('');
     setFeedback(null);
+    setTimeLeft(timeLimit);
     setTimeout(() => {
       if (inputRef.current) inputRef.current.focus();
     }, 100);
@@ -85,6 +126,7 @@ export default function App() {
     setPosition(0);
     setTurn('A');
     setWinner(null);
+    setTimeLeft(timeLimit);
     nextQuestion();
     
     // Bắt đầu phát nhạc khi người chơi tương tác
@@ -92,30 +134,6 @@ export default function App() {
       audioRef.current.play().catch(err => console.log("Autoplay blocked:", err));
     }
   };
-
-  // AI Turn Logic
-  useEffect(() => {
-    if (gameState === 'playing' && turn === 'B' && isAIMode && !feedback) {
-      const aiThinkingTime = 1500 + Math.random() * 1000;
-      const timer = setTimeout(() => {
-        // AI success rate (e.g., 75%)
-        const isCorrect = Math.random() < 0.75;
-        if (isCorrect) {
-          setUserAnswer(currentQuestion.a.toString());
-          setTimeout(() => {
-            handleCorrectAnswer();
-          }, 500);
-        } else {
-          // AI "types" a wrong answer or just fails
-          setUserAnswer("?"); 
-          setTimeout(() => {
-            handleWrongAnswer("AI đã trả lời sai!");
-          }, 500);
-        }
-      }, aiThinkingTime);
-      return () => clearTimeout(timer);
-    }
-  }, [turn, isAIMode, gameState, currentQuestion, feedback]);
 
   // Cập nhật âm lượng
   useEffect(() => {
@@ -139,7 +157,7 @@ export default function App() {
     setIsShaking(true);
     setTimeout(() => setIsShaking(false), 500);
 
-    const newPos = turn === 'A' ? position + 2 : position - 2;
+    const newPos = turn === 'A' ? position + 1 : position - 1;
     setPosition(newPos);
 
     if (Math.abs(newPos) >= WIN_THRESHOLD) {
@@ -157,6 +175,48 @@ export default function App() {
       }, 1500);
     }
   };
+
+  // Timer logic
+  useEffect(() => {
+    let timer;
+    if (gameState === 'playing' && feedback === null && !winner) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            handleWrongAnswer("Hết thời gian!");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [gameState, feedback, winner, handleWrongAnswer]);
+
+  // AI Turn Logic
+  useEffect(() => {
+    if (gameState === 'playing' && turn === 'B' && isAIMode && !feedback) {
+      const aiThinkingTime = 1500 + Math.random() * 1000;
+      const timer = setTimeout(() => {
+        // AI success rate (e.g., 75%)
+        const isCorrect = Math.random() < 0.75;
+        if (isCorrect) {
+          setUserAnswer(currentQuestion.a.toString());
+          setTimeout(() => {
+            handleCorrectAnswer();
+          }, 500);
+        } else {
+          // AI "types" a wrong answer or just fails
+          setUserAnswer("?"); 
+          setTimeout(() => {
+            handleWrongAnswer("AI đã trả lời sai!");
+          }, 500);
+        }
+      }, aiThinkingTime);
+      return () => clearTimeout(timer);
+    }
+  }, [turn, isAIMode, gameState, currentQuestion, feedback, handleCorrectAnswer, handleWrongAnswer]);
 
   const playSound = (src) => {
     if (isMuted) return;
@@ -192,6 +252,15 @@ export default function App() {
           title="Giới thiệu trò chơi"
         >
           <Info size={20} />
+        </button>
+
+        {/* Nút Settings (i) */}
+        <button
+          onClick={() => setShowSettings(true)}
+          className="bg-stone-600 hover:bg-stone-700 text-white p-2 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 flex items-center justify-center border-2 border-white"
+          title="Cài đặt thời gian"
+        >
+          <Settings size={20} />
         </button>
 
         <div className="bg-white/80 backdrop-blur p-2 rounded-2xl shadow-lg border-2 border-amber-200 flex items-center gap-2">
@@ -244,6 +313,9 @@ export default function App() {
               Trả lời đúng để đẩy gậy về phía đối thủ. Đẩy đối thủ ra khỏi vòng tròn để giành chiến thắng!
             </p>
             <div className="flex flex-col gap-3">
+              <div className="bg-stone-50 px-4 py-2 rounded-xl text-stone-500 font-bold text-xs uppercase tracking-wider mb-1">
+                Bộ câu hỏi: Lớp {selectedGrade.replace('grade', '')}
+              </div>
               <button
                 onClick={() => setShowRules(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-8 rounded-full text-sm shadow transition-all flex items-center justify-center gap-2 mx-auto w-full"
@@ -268,7 +340,7 @@ export default function App() {
                 onClick={() => setGameState('teacher')}
                 className="bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 px-8 rounded-full text-sm shadow transition-all flex items-center justify-center gap-2 mx-auto w-full"
               >
-                <Settings size={16} /> Chế độ Giáo viên
+                ⚙️ Giáo viên
               </button>
             </div>
           </motion.div>
@@ -280,74 +352,66 @@ export default function App() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full border-4 border-stone-400 flex flex-col h-[80vh]"
+            className="bg-white p-6 rounded-3xl shadow-2xl max-w-md w-full border-4 border-stone-400 flex flex-col"
           >
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-stone-800 flex items-center gap-2">
-                <Settings size={20} /> Quản lý câu hỏi
+                <Settings size={20} /> Cài đặt Giáo viên
               </h2>
               <button onClick={() => setGameState('start')} className="text-stone-400 hover:text-stone-600">
                 <X size={24} />
               </button>
             </div>
 
-            <div className="flex gap-2 mb-4">
-              <div className="flex flex-col gap-1 flex-1">
-                <label className="text-[10px] font-bold text-stone-500 uppercase">Câu hỏi</label>
-                <input
-                  type="text"
-                  placeholder="VD: 2 + 2 = ?"
-                  value={newQ}
-                  onChange={(e) => setNewQ(e.target.value)}
-                  className="p-2 border-2 border-stone-200 rounded-lg text-sm"
-                />
+            <div className="space-y-6 mb-8">
+              {/* Chọn Lớp */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest px-1">Chọn khối lớp</label>
+                <select
+                  value={selectedGrade}
+                  onChange={(e) => {
+                    const grade = e.target.value;
+                    setSelectedGrade(grade);
+                    setQuestions(QUESTION_BANK[grade]);
+                  }}
+                  className="w-full p-4 bg-stone-50 border-2 border-stone-200 rounded-2xl font-bold text-stone-700 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer"
+                >
+                  <option value="grade1">Lớp 1 (Số 1-100, Cộng trừ đơn giản)</option>
+                  <option value="grade2">Lớp 2 (Số 1-1000, Nhân chia 2 & 5)</option>
+                  <option value="grade3">Lớp 3 (Số 10000, Nhân chia 1 chữ số)</option>
+                  <option value="grade4">Lớp 4 (Số triệu, Làm tròn, Nhân chia 2 chữ số)</option>
+                  <option value="grade5">Lớp 5 (Số thập phân, Nhân chia nâng cao)</option>
+                </select>
               </div>
-              <div className="flex flex-col gap-1 w-20">
-                <label className="text-[10px] font-bold text-stone-500 uppercase">Đáp án</label>
-                <input
-                  type="text"
-                  placeholder="Đáp án"
-                  value={newA}
-                  onChange={(e) => setNewA(e.target.value)}
-                  className="p-2 border-2 border-stone-200 rounded-lg text-sm"
-                />
-              </div>
-              <button
-                onClick={() => {
-                  if (newQ && newA) {
-                    setQuestions([...questions, { q: newQ, a: newA }]);
-                    setNewQ('');
-                    setNewA('');
-                  }
-                }}
-                className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 self-end mb-[2px]"
-              >
-                <Plus size={20} />
-              </button>
-            </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 space-y-2 mb-4 custom-scrollbar">
-              {questions.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center p-2 bg-stone-50 rounded-lg border border-stone-100">
-                  <div className="text-sm">
-                    <span className="font-bold text-stone-700">{item.q}</span>
-                    <span className="ml-2 text-green-600">= {item.a}</span>
+              {/* Chỉnh Thời gian */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest px-1">Thời gian trả lời (5-90 giây)</label>
+                <div className="flex gap-4 items-center">
+                  <input
+                    type="range"
+                    min="5"
+                    max="90"
+                    value={timeLimit}
+                    onChange={(e) => setTimeLimit(parseInt(e.target.value))}
+                    className="flex-1 h-3 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  />
+                  <div className="w-16 h-12 bg-amber-50 border-2 border-amber-200 rounded-xl flex items-center justify-center font-black text-amber-600">
+                    {timeLimit}s
                   </div>
-                  <button
-                    onClick={() => setQuestions(questions.filter((_, i) => i !== idx))}
-                    className="text-red-400 hover:text-red-600 p-1"
-                  >
-                    <Trash2 size={16} />
-                  </button>
                 </div>
-              ))}
+              </div>
             </div>
 
             <button
-              onClick={() => setGameState('start')}
-              className="bg-stone-800 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-stone-900 transition-all flex items-center justify-center gap-2"
+              onClick={() => {
+                localStorage.setItem('tug-math-selected-grade', selectedGrade);
+                localStorage.setItem('tug-math-time-limit', timeLimit.toString());
+                setGameState('start');
+              }}
+              className="bg-amber-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-amber-600 transition-all flex items-center justify-center gap-2"
             >
-              <Save size={20} /> Lưu và Quay lại
+              <Save size={20} /> Lưu cài đặt
             </button>
           </motion.div>
         )}
@@ -368,9 +432,13 @@ export default function App() {
                     <span className="font-bold text-lg">Đội A</span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-amber-600 font-bold">
-                    <Trophy size={20} />
-                    <span className="text-sm uppercase tracking-tighter">Đang thi đấu</span>
+                  <div className="flex flex-col items-center gap-0">
+                    <div className="flex items-center gap-1 mb-[-2px]">
+                      <span className="text-[8px] font-black uppercase text-amber-500">Lớp {selectedGrade.replace('grade', '')}</span>
+                    </div>
+                    <div className={`text-2xl font-black tabular-nums transition-colors ${timeLeft <= 3 ? 'text-red-500 animate-pulse' : 'text-amber-600'}`}>
+                      {timeLeft}s
+                    </div>
                   </div>
 
                   <div className={`flex items-center gap-2 px-4 py-1 rounded-full transition-colors ${turn === 'B' ? 'bg-red-500 text-white' : 'bg-stone-100 text-stone-400'}`}>
@@ -587,6 +655,75 @@ export default function App() {
                   Đóng
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowSettings(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 border-4 border-stone-600 relative"
+            >
+              <button 
+                onClick={() => setShowSettings(false)}
+                className="absolute top-4 right-4 text-stone-400 hover:text-stone-600"
+              >
+                <X size={24} />
+              </button>
+              <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
+                <Settings size={24} /> Cài đặt thời gian
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-bold text-stone-500 uppercase">Thời gian trả lời (giây)</label>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number"
+                      min="5"
+                      max="90"
+                      value={timeLimit}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 5;
+                        setTimeLimit(val);
+                      }}
+                      className="flex-1 p-3 border-2 border-stone-200 rounded-xl text-xl font-bold focus:border-amber-500 outline-none"
+                    />
+                    <span className="text-xl font-bold text-stone-400">giây</span>
+                  </div>
+                  <p className="text-xs text-stone-400 italic">Giới hạn từ 5 đến 90 giây</p>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => {
+                  let finalLimit = timeLimit;
+                  if (finalLimit < 5) finalLimit = 5;
+                  if (finalLimit > 90) finalLimit = 90;
+                  setTimeLimit(finalLimit);
+                  localStorage.setItem('tug-math-time-limit', finalLimit.toString());
+                  setShowSettings(false);
+                  if (gameState === 'playing') {
+                    setTimeLeft(finalLimit); // Reset timer immediately if playing
+                  }
+                }}
+                className="mt-8 w-full bg-stone-800 hover:bg-stone-900 text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Save size={20} /> Lưu cài đặt
+              </button>
             </motion.div>
           </motion.div>
         )}
